@@ -38,7 +38,7 @@ my $lns=scalar(@in_brand);
 my $row=1;
 for(my $j=1;$j<=$#in_brand;$j++){
 
-	print"***$in_brand[$j]***\n";
+	# print"***$in_brand[$j]***\n";
 	my $cal=(($j+1)/$lns)*100;
 	$progress->update($cal);
 	
@@ -52,17 +52,28 @@ for(my $j=1;$j<=$#in_brand;$j++){
 			$brand[$i]=~s/|//igs; $aliases[$i]=~s/|//igs;
 			if($in_brand[$j]=~m/^$brand[$i]$/is){
 				$flg=1;
-				 print"Brand Matched****|$in_brand[$j]|***$brand[$i]***\n";
+				 # print"Brand Matched****|$in_brand[$j]|***$brand[$i]***\n";
 				 $template->AddCell(0, $row,   9, "YES",     $format);
-				$category[$i]=~s/\s+/\\s\*/igs;
-				if($in_category[$j]=~m/\b$category[$i]\b/is){
-					$template->AddCell(0, $row,   10, "YES",     $format);
-					&checkSocial($i);
+				 my @cats=split(",",$category[$i]);
 
-				}else{
-					$template->AddCell(0, $row,   10, "NO",     $format);
-					&checkSocial($i);
-				}
+					# $category[$i]=~s/\s+/\\s\*/igs;
+					
+					my $flgs=0;
+					foreach my $cat(@cats){
+						# print"***$in_category[$j]<>$category[$i]****\n";
+						if($in_category[$j]=~m/^$cat$/is){
+
+							$template->AddCell(0, $row,   10, "YES",     $format);
+							&checkSocial($i);
+							last;
+						}
+						else{
+							$template->AddCell(0, $row,   10, "NO",     $format);
+							&checkSocial($i);
+						}
+					}
+
+
 				next;
 			}
 			else{
@@ -72,7 +83,7 @@ for(my $j=1;$j<=$#in_brand;$j++){
 					if($alias=~m/^$in_brand[$j]$/is){
 
 						$flg=1;
-						 print"Brand Matched in ELSEIF****$aliases[$i]***|$in_brand[$j]|***\n";
+						 # print"Brand Matched in ELSEIF****$aliases[$i]***|$in_brand[$j]|***\n";
 						 $template->AddCell(0, $row,   9, "YES",     $format);
 						$category[$i]=~s/\s+/\\s\*/igs;
 						if($in_category[$j]=~m/\b$category[$i]\b/is){
@@ -85,7 +96,7 @@ for(my $j=1;$j<=$#in_brand;$j++){
 						}
 
 					}
-				}
+				}	
 		 	}
 	}
 

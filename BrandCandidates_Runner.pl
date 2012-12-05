@@ -56,13 +56,16 @@ for(my $k=1;$k<=$#in_brand;$k++){
 	my $category=$in_category[$k];
 	my $source=$in_source[$k];
 	my $incosmos=$in_cosmos[$k];
-	print"***$bName***\n";
+		print"***$bName***\n";
 		my $catFlg=0;
-		for(my $i=0;$i<=$#BrandName;$i++){
-			$bName=~s/\s+/\\s\*/igs;
-			# print"***$BrandName[$i]***$bName***\n";
-			if(defined($BrandName[$i])&& ($BrandName[$i]=~m/^$bName$/is)){
+		$bName=~s/\s+/ZZZ/igs;
+		$bName=~s/\W//igs;
+		$bName=~s/ZZZ/\\s\*/igs;
 
+		for(my $i=0;$i<=$#BrandName;$i++){
+			
+			if(defined($BrandName[$i])&& ($BrandName[$i]=~m/^$bName$/is)){
+				print"***$BrandName[$i]***$bName***\n";
 				$bName=~s/\\s\*/ /igs;
 				print"******$BrandName[$i]***\tBrand Matched\n";
 
@@ -124,13 +127,16 @@ for(my $k=1;$k<=$#in_brand;$k++){
 					else{
 
 						my @catCount=split(",",$Category[$i]);
+						print scalar(@catCount);
+						print"TEST_COUNT<>:";<>;
 						$subcategory=~s/\\s\*/ /igs;
 						if(scalar(@catCount) > 0){
 
 							push(@catCount,"$subcategory");
+							@catCount=uniq(@catCount);
 							my $catup=join(",",@catCount);
 							my $category_count=scalar(@catCount);
-							print"$category_count\n";
+							print"$category_count\n";<>;
 							$db->brands->update({"BrandId" => "$BrandId[$i]" }, {'$set' => {"Category" => "$catup","CategoryCount" => "$category_count"}});
 							$template->AddCell(0, $row, 4, "Category Updated",  $format);$template->AddCell(0, $row, 6, "$category_count",  $format);
 							$template->AddCell(0, $row, 7, "$catup",  $format);
@@ -211,18 +217,20 @@ for(my $k=1;$k<=$#in_brand;$k++){
 
 		
 		}
-		# $bName=~s/\\s\*/ /igs;
+		$bName=~s/\\s\*/ /igs;
+
 		# $worksheet->write($r,0,"$bName");$worksheet->write($r,1,"$category");$worksheet->write($r,2,"$source");$worksheet->write($r,3,"$incosmos");
 		if($catFlg == 0){
-
 			print"Not Found \n inserting a record...\n";
 			$count++;
 			my $id="BR".$count;
 			# print"Last rec-$id\nincremented..\n";
 			$id++;
 			print"INSERT1\n";
-			$db->brands->insert({"BrandId" => "$id","BrandName" => "$bName","Source" => "$source","SOurceCount" => "1","Category" => "$category","CategoryCount" => "1","InCosmos" => "$incosmos"});
-			$template->AddCell(0, $row, 4, "Added",  $format);$template->AddCell(0, $row, 5, "1",  $format);$template->AddCell(0, $row, 6, "1",  $format);
+			my @catCount=split(",",$category);
+			my @sorCount=split(",",$source);
+			$db->brands->insert({"BrandId" => "$id","BrandName" => "$bName","Source" => "$source","SOurceCount" => "1","Category" => "$category","CategoryCount" => scalar(@catCount),"InCosmos" => "$incosmos"});
+			$template->AddCell(0, $row, 4, "Added",  $format);$template->AddCell(0, $row, 5, scalar(@sorCount),  $format);$template->AddCell(0, $row, 6, scalar(@catCount),  $format);
 			print"Inserted\n";
 
 		}
@@ -231,3 +239,7 @@ for(my $k=1;$k<=$#in_brand;$k++){
 
 }
  $template->SaveAs('Report.xls');
+
+sub uniq {
+    return keys %{{ map { $_ => 1 } @_ }};
+}
